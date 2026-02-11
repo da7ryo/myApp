@@ -4,20 +4,19 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-const homeHtml = fs.readFileSync("./home.html", "utf-8");
+// const homeHtml = fs.readFileSync("./home.html", "utf-8");
+
+const users = [];
 
 app.get("/", function (req, res) {
-  res.send(homeHtml);
+  res.json(users);
 });
 
 app.post("/", function (req, res) {
-  console.log(req.body);
+  const newUser = req.body;
+  users.push(newUser);
 
-  res.send("Data has arrived");
-});
-
-app.get("/about", function (req, res) {
-  res.json({ mesagge: "About page" });
+  res.json(newUser);
 });
 
 app.listen(8080, function () {
