@@ -10,7 +10,7 @@ app.use(express.json());
 let animals = [];
 
 app.get("/animals", function (req, res) {
-  res.json(animals);
+  res.status(200).json(animals);
 });
 
 app.post("/animals", function (req, res) {
@@ -21,27 +21,30 @@ app.post("/animals", function (req, res) {
 
   animals.push(newAnimal);
 
-  res.json(newAnimal);
+  res.status(201).json(newAnimal);
 });
 
-app.get("/animals/:id", function (req, res) {
+function checkExistenceMiddleware(req, res, next) {
   const { id } = req.params;
   const selectedAnimal = animals.find((animal) => animal.id === id);
 
   if (!selectedAnimal) {
-    return res.json({ msg: "Animal not found" });
+    return res.status(404).json({ msg: "Animal not found" });
   }
+  res.locals.selectedAnimal = selectedAnimal;
+  next();
+}
 
-  res.json(selectedAnimal);
+app.get("/animals/:id", checkExistenceMiddleware, function (req, res) {
+  res.status(200).json(res.locals.selectedAnimal);
 });
 
-app.patch("/animals/:id", function (req, res) {
-  const { id } = req.params;
-  const selectedAnimal = animals.find((animal) => animal.id === id);
+// dobiti u req.body name property, u req.params cu dobiti id, trebam u animals arrayu naci zeljeni objekt i postaviti mu
+// ime na vrijednost koju sam dobio u req.body i vratiti promijenjeni objekt, uz koristenje map metode trebam update
+// uraditi
 
-  if (!selectedAnimal) {
-    return res.json({ msg: "Animal not found" });
-  }
+app.patch("/animals/:id", checkExistenceMiddleware, function (req, res) {
+  const { id } = req.params;
 
   const { name } = req.body;
   animals = animals.map((animal) => {
@@ -56,11 +59,16 @@ app.patch("/animals/:id", function (req, res) {
 
   console.log(updatedAnimal);
 
-  res.json(updatedAnimal);
+  res.status(200).json(updatedAnimal);
 });
-// dobiti u req.body name property, u req.params cu dobiti id, trebam u animals arrayu naci zeljeni objekt i postaviti mu
-// ime na vrijednost koju sam dobio u req.body i vratiti promijenjeni objekt, uz koristenje map metode trebam update
-// uraditi
+
+app.delete("/animals/:id", checkExistenceMiddleware, function (req, res) {
+  const { id } = req.params;
+
+  animals = animals.filter((animal) => animal.id !== id);
+
+  res.status(204).json(null);
+});
 
 app.listen(8080, function () {
   console.log("Hello from the server");
