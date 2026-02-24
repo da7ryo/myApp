@@ -1,16 +1,29 @@
 const fs = require("fs");
 const express = require("express");
 const { randomUUID } = require("crypto"); // vraca string, jedinstveni id za svaki poziv
+const { Script } = require("vm");
 
 const app = express();
 app.use(express.json());
 
-// const homeHtml = fs.readFileSync("./home.html", "utf-8");
-
+const homePage = fs.readFileSync("./public/index.html", "utf-8");
+const styleCss = fs.readFileSync("./public/style.css", "utf-8");
+const scriptJs = fs.readFileSync("./public/script.js", "utf-8");
 let animals = [];
 
+app.get("/pikachu", function (req, res) {
+  res
+    .status(200)
+    .setHeader("Content-Type", "application/javascript")
+    .send(scriptJs);
+});
+
+app.get("/letecaMetla", function (req, res) {
+  res.status(200).setHeader("Content-Type", "text/css").send(styleCss);
+});
+
 app.get("/animals", function (req, res) {
-  res.status(200).json(animals);
+  res.status(200).send(homePage);
 });
 
 app.post("/animals", function (req, res) {
@@ -32,6 +45,7 @@ function checkExistenceMiddleware(req, res, next) {
     return res.status(404).json({ msg: "Animal not found" });
   }
   res.locals.selectedAnimal = selectedAnimal;
+  res.locals.id = id;
   next();
 }
 
