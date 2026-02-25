@@ -5,24 +5,13 @@ const { Script } = require("vm");
 
 const app = express();
 app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
 
-const homePage = fs.readFileSync("./public/index.html", "utf-8");
-const styleCss = fs.readFileSync("./public/style.css", "utf-8");
-const scriptJs = fs.readFileSync("./public/script.js", "utf-8");
+const homePage = fs.readFileSync(`${__dirname}/index.html`, "utf-8");
+
 let animals = [];
 
-app.get("/pikachu", function (req, res) {
-  res
-    .status(200)
-    .setHeader("Content-Type", "application/javascript")
-    .send(scriptJs);
-});
-
-app.get("/letecaMetla", function (req, res) {
-  res.status(200).setHeader("Content-Type", "text/css").send(styleCss);
-});
-
-app.get("/animals", function (req, res) {
+app.get("/", function (req, res) {
   res.status(200).send(homePage);
 });
 
