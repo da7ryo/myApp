@@ -5,6 +5,7 @@ const { Script } = require("vm");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(`${__dirname}/public`));
 
 const homePage = fs.readFileSync(`${__dirname}/index.html`, "utf-8");
@@ -12,7 +13,13 @@ const homePage = fs.readFileSync(`${__dirname}/index.html`, "utf-8");
 let animals = [];
 
 app.get("/", function (req, res) {
-  res.status(200).send(homePage);
+  const animalsForHtml = animals
+    .map(
+      (animal) => `<p>${animal.name}, ${animal.type} with ID: ${animal.id}</p>`,
+    )
+    .join();
+  const finalHomePage = homePage.replace("PLACEHOLDER", animalsForHtml);
+  res.status(200).send(finalHomePage);
 });
 
 app.post("/animals", function (req, res) {
@@ -23,7 +30,7 @@ app.post("/animals", function (req, res) {
 
   animals.push(newAnimal);
 
-  res.status(201).json(newAnimal);
+  res.redirect("/");
 });
 
 function checkExistenceMiddleware(req, res, next) {
