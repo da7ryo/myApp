@@ -9,13 +9,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(`${__dirname}/public`));
 
 const homePage = fs.readFileSync(`${__dirname}/index.html`, "utf-8");
+const setAnimalPage = fs.readFileSync(`${__dirname}/set-animal.html`, "utf-8");
 
 let animals = [];
 
 app.get("/", function (req, res) {
   const animalsForHtml = animals
     .map(
-      (animal) => `<p>${animal.name}, ${animal.type} with ID: ${animal.id}</p>`,
+      (animal) =>
+        `<p>${animal.name}, ${animal.type} with ID: ${animal.id} <a href="/update-animal/${animal.id}"><button>update</button></a> </p>`,
     )
     .join();
   const finalHomePage = homePage.replace("PLACEHOLDER", animalsForHtml);
@@ -29,6 +31,60 @@ app.post("/animals", function (req, res) {
   };
 
   animals.push(newAnimal);
+
+  res.redirect("/");
+});
+
+app.get("/create-animal", function (req, res) {
+  const title = "Create animal";
+  const action = "animals";
+  const method = "POST";
+  const nameInput = "";
+  const typeInput = "";
+  const submit = "Create";
+
+  const finalCreateAnimalPage = setAnimalPage
+    .replace("PLACEHOLDER_TITLE", title)
+    .replace("PLACEHOLDER_ACTION", action)
+    .replace("PLACEHOLDER_METHOD", method)
+    .replace("PLACEHOLDER_NAME", nameInput)
+    .replace("PLACEHOLDER_TYPE", typeInput)
+    .replace("PLACEHOLDER_SUBMIT", submit);
+
+  res.status(200).send(finalCreateAnimalPage);
+});
+
+app.get("/update-animal/:id", function (req, res) {
+  const { id } = req.params;
+  const selectedAnimal = animals.find((animal) => animal.id === id);
+  const title = "Update animal";
+  const action = `animals/${id}`;
+  const method = "POST";
+  const nameInput = selectedAnimal.name;
+  const typeInput = selectedAnimal.type;
+  const submit = "Update";
+
+  const finalCreateAnimalPage = setAnimalPage
+    .replace("PLACEHOLDER_TITLE", title)
+    .replace("PLACEHOLDER_ACTION", action)
+    .replace("PLACEHOLDER_METHOD", method)
+    .replace("PLACEHOLDER_NAME", nameInput)
+    .replace("PLACEHOLDER_TYPE", typeInput)
+    .replace("PLACEHOLDER_SUBMIT", submit);
+
+  res.status(200).send(finalCreateAnimalPage);
+});
+
+app.post("/animals/:id", function (req, res) {
+  const { id } = req.params;
+  const { name, type } = req.body;
+
+  const selectedAnimal = animals.find((animal) => animal.id === id);
+
+  if (selectedAnimal) {
+    selectedAnimal.name = name;
+    selectedAnimal.type = type;
+  }
 
   res.redirect("/");
 });
@@ -53,7 +109,7 @@ app.get("/animals/:id", checkExistenceMiddleware, function (req, res) {
 // ime na vrijednost koju sam dobio u req.body i vratiti promijenjeni objekt, uz koristenje map metode trebam update
 // uraditi
 
-app.patch("/animals/:id", checkExistenceMiddleware, function (req, res) {
+/*app.patch("/animals/:id", checkExistenceMiddleware, function (req, res) {
   const { id } = req.params;
 
   const { name } = req.body;
@@ -70,7 +126,7 @@ app.patch("/animals/:id", checkExistenceMiddleware, function (req, res) {
   console.log(updatedAnimal);
 
   res.status(200).json(updatedAnimal);
-});
+}); */
 
 app.delete("/animals/:id", checkExistenceMiddleware, function (req, res) {
   const { id } = req.params;
