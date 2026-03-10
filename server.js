@@ -17,7 +17,11 @@ app.get("/", function (req, res) {
   const animalsForHtml = animals
     .map(
       (animal) =>
-        `<p>${animal.name}, ${animal.type} with ID: ${animal.id} <a href="/update-animal/${animal.id}"><button>update</button></a> </p>`,
+        `<p>${animal.name}, ${animal.type} with ID: ${animal.id} 
+      <a href="/update-animal/${animal.id}"><button>update</button></a>
+      <form action="/animals/delete/${animal.id}" method="POST">
+      <button type="submit">delete</button> </form>
+      </p>`,
     )
     .join();
   const finalHomePage = homePage.replace("PLACEHOLDER", animalsForHtml);
@@ -128,12 +132,12 @@ app.get("/animals/:id", checkExistenceMiddleware, function (req, res) {
   res.status(200).json(updatedAnimal);
 }); */
 
-app.delete("/animals/:id", checkExistenceMiddleware, function (req, res) {
+app.post("/animals/delete/:id", checkExistenceMiddleware, function (req, res) {
   const { id } = req.params;
 
   animals = animals.filter((animal) => animal.id !== id);
 
-  res.status(204).json(null);
+  res.redirect("/");
 });
 
 app.listen(8080, function () {
