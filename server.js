@@ -11,7 +11,7 @@ app.use(express.static(`${__dirname}/public`));
 const homePage = fs.readFileSync(`${__dirname}/index.html`, "utf-8");
 const setAnimalPage = fs.readFileSync(`${__dirname}/set-animal.html`, "utf-8");
 
-let animals = [];
+let animals = JSON.parse(fs.readFileSync(`${__dirname}/animals.json`, "utf-8"));
 
 app.get("/", function (req, res) {
   const animalsForHtml = animals
@@ -35,6 +35,12 @@ app.post("/animals", function (req, res) {
   };
 
   animals.push(newAnimal);
+
+  fs.writeFileSync(
+    `${__dirname}/animals.json`,
+    JSON.stringify(animals),
+    "utf-8",
+  );
 
   res.redirect("/");
 });
