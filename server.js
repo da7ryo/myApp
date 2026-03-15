@@ -95,7 +95,7 @@ app.post("/animals/:id", function (req, res) {
     selectedAnimal.name = name;
     selectedAnimal.type = type;
   }
-
+  fs.writeFileSync(`${__dirname}/users.json`, JSON.stringify(users), "utf-8");
   res.redirect("/");
 });
 
