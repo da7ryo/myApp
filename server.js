@@ -3,6 +3,8 @@ const express = require("express");
 const { randomUUID } = require("crypto"); // vraca string, jedinstveni id za svaki poziv
 const { Script } = require("vm");
 
+const { connect, query } = require("./db.js");
+connect();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -13,7 +15,9 @@ const setAnimalPage = fs.readFileSync(`${__dirname}/set-animal.html`, "utf-8");
 
 let animals = JSON.parse(fs.readFileSync(`${__dirname}/animals.json`, "utf-8"));
 
-app.get("/", function (req, res) {
+app.get("/", async function (req, res) {
+  const result = await query();
+  console.log(result);
   const animalsForHtml = animals
     .map(
       (animal) =>
