@@ -3,7 +3,7 @@ const express = require("express");
 const { randomUUID } = require("crypto"); // vraca string, jedinstveni id za svaki poziv
 const { Script } = require("vm");
 
-const { connect, query } = require("./db.js");
+const { connect, getClient } = require("./db.js");
 connect();
 const app = express();
 app.use(express.json());
@@ -16,48 +16,41 @@ const setAnimalPage = fs.readFileSync(`${__dirname}/set-animal.html`, "utf-8");
 let animals = JSON.parse(fs.readFileSync(`${__dirname}/animals.json`, "utf-8"));
 
 app.get("/", async function (req, res) {
-  const result = await query();
-  console.log(result);
-  const animalsForHtml = animals
+  const result = await getClient().query("SELECT * FROM authors");
+  const authors = result.rows;
+  console.log(result.rows);
+  const authorsForHtml = authors
     .map(
-      (animal) =>
-        `<p>${animal.name}, ${animal.type} with ID: ${animal.id} 
-      <a href="/update-animal/${animal.id}"><button>update</button></a>
-      <form action="/animals/delete/${animal.id}" method="POST">
+      (author) =>
+        `<p>${author.first_name}, ${author.last_name}  
+      <a href="/update-author/${author.id}"><button>update</button></a>
+      <form action="/authors/delete/${author.id}" method="POST">
       <button type="submit">delete</button> </form>
       </p>`,
     )
     .join();
-  const finalHomePage = homePage.replace("PLACEHOLDER", animalsForHtml);
+  const finalHomePage = homePage.replace("PLACEHOLDER", authorsForHtml);
   res.status(200).send(finalHomePage);
 });
 
-app.post("/animals", function (req, res) {
-  const newAnimal = {
-    ...req.body,
-    id: randomUUID(),
-  };
-
-  animals.push(newAnimal);
-
-  fs.writeFileSync(
-    `${__dirname}/animals.json`,
-    JSON.stringify(animals),
-    "utf-8",
+app.post("/authors", async function (req, res) {
+  const { firstName, lastName } = req.body;
+  await getClient().query(
+    `INSERT INTO authors(first_name, last_name) VALUES ($1, $2)`,
+    [firstName, lastName],
   );
-
   res.redirect("/");
 });
 
-app.get("/create-animal", function (req, res) {
-  const title = "Create animal";
-  const action = "animals";
+app.get("/create-author", function (req, res) {
+  const title = "Create author";
+  const action = "authors";
   const method = "POST";
   const nameInput = "";
   const typeInput = "";
   const submit = "Create";
 
-  const finalCreateAnimalPage = setAnimalPage
+  const finalCreateAuthorPage = setAnimalPage
     .replace("PLACEHOLDER_TITLE", title)
     .replace("PLACEHOLDER_ACTION", action)
     .replace("PLACEHOLDER_METHOD", method)
@@ -65,7 +58,7 @@ app.get("/create-animal", function (req, res) {
     .replace("PLACEHOLDER_TYPE", typeInput)
     .replace("PLACEHOLDER_SUBMIT", submit);
 
-  res.status(200).send(finalCreateAnimalPage);
+  res.status(200).send(finalCreateAuthorPage);
 });
 
 app.get("/update-animal/:id", function (req, res) {

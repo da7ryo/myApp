@@ -7,24 +7,23 @@ const pool = new Pool({
   user: "postgres",
   password: "password",
   port: 5432,
-  database: "animals",
+  database: "library",
 });
 
 async function connect() {
   _client = await pool.connect();
   console.log("Connected with DB");
 }
-async function query() {
+
+function getClient() {
   if (!_client) {
     throw new Error("DB client is not defined");
   }
 
-  const result = await _client.query("SELECT * FROM animals");
-
-  return result;
+  return _client;
 }
 
 module.exports = {
   connect,
-  query,
+  getClient,
 };
